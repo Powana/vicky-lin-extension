@@ -1,5 +1,9 @@
-import pyKey as pk
+import pyKey as pK
+from timeit import default_timer as timer
 
+start = timer()
+end = timer()
+print("time:", end-start)
 signal_callbacks = {}
 
 
@@ -14,18 +18,19 @@ def handle_signal(signal_name):
 
 
 def send_with_mod_key(key: str):
-    # todo: add check for ets2 as activewindow here? might be too slow
+    # todo: add check for ets2 as active window here? might be too slow
     mod_key = "RSHIFT"
 
-    pk.pressKey(mod_key)
-    pk.pressKey(key)
-    pk.releaseKey(mod_key)
-    pk.releaseKey(key)
+    pK.pressKey(mod_key)
+    pK.pressKey(key)
+    pK.releaseKey(mod_key)
+    pK.releaseKey(key)
 
 
 @handle_signal("LIN_DirInd_StalkStatus_1")
 def hndl_dirind(signal_val):
+    pref = "LIN_DirInd_StalkStatus_"
     if signal_val == 1:
         pass
-    if signal_val == "LIN_DirInd_StalkStatus_LeftTurningIndication":
+    if signal_val == pref + "LeftTurningIndication":
         pass

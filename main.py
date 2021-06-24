@@ -4,6 +4,8 @@ from ucanlintools import LUC, LINFrame
 from ldfparser import parseLDF, LinFrame
 import atexit
 from signal_handlers import signal_callbacks
+from win32gui import GetWindowText, GetForegroundWindow
+
 
 ldf = parseLDF("LDFs/LIN23_VMCU-T2_1.3.0-postfix.ldf")
 request_frame = ldf.frame('VMCUtoSlaves_L23')
@@ -18,6 +20,10 @@ def handle_rx_data(frame: LINFrame):
 
 
 def handle_new_rx_data(frame: LINFrame):
+
+    if "Euro Truck Simulator 2" not in GetWindowText(GetForegroundWindow()):
+        return
+
     # data attr is set on rx frames
     data = ldf.frame(frame.id).parse_raw(frame.data)
     print("RX: ID=", frame.id, " DATA=", data, " (NEW DATA)", sep="")
