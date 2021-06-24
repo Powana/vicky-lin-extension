@@ -1,0 +1,3 @@
+ucanlintools>=0.0.9
+ldfparser>=0.8.0
+pyKey>=0.2
