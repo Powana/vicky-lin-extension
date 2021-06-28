@@ -3,7 +3,9 @@
 from ucanlintools import LUC, LINFrame
 from ldfparser import parseLDF, LinFrame
 import atexit
-from signal_handlers import signal_callbacks
+# from signal_handlers import signal_callbacks
+import signal_handlers as sh
+
 from win32gui import GetWindowText, GetForegroundWindow
 
 
@@ -37,7 +39,10 @@ def exit_handler(lin_inst: LUC):
         del lin_inst  # Disables LUC and de-inits serial port
 
 
+
 if __name__ == '__main__':
+    """
+    config_lines[2]: "device joy `di8.'{E7D4CFE0-D827-11EB-8004-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'`"
     lin = LUC("COM1")
     lin.openAsMaster()
     lin.set_frame_rx_handler(handle_rx_data)
@@ -47,3 +52,31 @@ if __name__ == '__main__':
     # todo: look at custom timing with big T or big R command and lin.flushData
     lin.enable()
     atexit.register(exit_handler, lin)
+    """
+    # todo: documentation, how to set up etc.
+    # todo maybe: script for adding joy.b# to controls.sii
+
+    from time import sleep
+    for i in range(4):
+        print(i)
+        sleep(1)
+    """
+    import signal_handlers as sh
+    print("Wipers0")
+    sh.hndl_wiperstalk(0)
+    sleep(7)
+    print("Wipers1")
+    sh.hndl_wiperstalk(1)
+    sleep(7)
+    print("Wipers2")
+    sh.hndl_wiperstalk(2)
+    sleep(7)
+    print("Wipers3")
+    sh.hndl_wiperstalk(3)
+    sleep(7)
+    print("Wipers4")
+    sh.hndl_wiperstalk(4)
+    sleep(7)
+    print("done")
+    """
+

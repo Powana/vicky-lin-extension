@@ -1,3 +1,11 @@
 ucanlintools>=0.0.9
 ldfparser>=0.8.0
 pyKey>=0.2
+pip>=21.1.1
+lark>=0.11.3
+lark-parser>=0.11.3
+pywin32>=301
+pyvjoy>=1.0.1
+pyserial>=3.5
+bitstruct>=8.11.1
+setuptools>=56.0.0
