@@ -57,26 +57,26 @@ if __name__ == '__main__':
     # todo maybe: script for adding joy.b# to controls.sii
 
     from time import sleep
-    for i in range(4):
+    for i in range(4, 0, -1):
         print(i)
         sleep(1)
-    """
+
     import signal_handlers as sh
     print("Wipers0")
-    sh.hndl_wiperstalk(0)
+    sh.hndl_wiper_stalk(0)
     sleep(7)
     print("Wipers1")
-    sh.hndl_wiperstalk(1)
+    sh.hndl_wiper_stalk(1)
     sleep(7)
     print("Wipers2")
-    sh.hndl_wiperstalk(2)
+    sh.hndl_wiper_stalk(2)
     sleep(7)
     print("Wipers3")
-    sh.hndl_wiperstalk(3)
+    sh.hndl_wiper_stalk(3)
     sleep(7)
     print("Wipers4")
-    sh.hndl_wiperstalk(4)
+    sh.hndl_wiper_stalk(4)
     sleep(7)
     print("done")
-    """
+    
 
