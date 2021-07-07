@@ -1,4 +1,5 @@
 
+DEVICE_NAME = "joy2"  # Todo: This has to be set manually according to the controls.sii for now
 
 # map between name of input in controls.sii, and the vJoy button # to associate with it
 bindings = {
@@ -23,7 +24,7 @@ def main():
     for i, line in enumerate(lines):
         for input_name in bindings:
             if " " + input_name + " " in line:
-                joy_str = "joy.b" + str(bindings[input_name]) + "?0 "
+                joy_str = DEVICE_NAME + ".b" + str(bindings[input_name]) + "?0 "
                 # bug: this will be False if ui_joy.b#?0 is in the line, but probably doesnt matter
                 if joy_str not in line:
                     j = lines[i].index("`")+1  # bindings start after first backtick in line
