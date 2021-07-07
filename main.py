@@ -1,82 +1,148 @@
 # https://c4deszes.github.io/ldfparser/frames.html
 # https://pyserial.readthedocs.io/en/latest/shortintro.html
-from ucanlintools import LUC, LINFrame
-from ldfparser import parseLDF, LinFrame
-import atexit
-# from signal_handlers import signal_callbacks
-import signal_handlers as sh
+import time
 
+from ucanlintools import LUC, LINFrame
+from ldfparser import parseLDF, LinFrame, LDF
+from pynput.keyboard import Key, Listener, Controller
+from signal_handlers import signal_callbacks
+
+from serial.serialutil import SerialException
 from win32gui import GetWindowText, GetForegroundWindow
 
+COM_PORT = "COM3"
+# Disables ets2 check and print statements
+DEBUG = True
 
-ldf = parseLDF("LDFs/LIN23_VMCU-T2_1.3.0-postfix.ldf")
-request_frame = ldf.frame('VMCUtoSlaves_L23')
-request_data = request_frame.raw({"BacklightCmd_ISig_31": 0,
-                                  "FuncIndIlluminationLevel_ISig_31": 1,
-                                  "LIN_Rainsensor_Indication": 0})
+# When adding a new lin bus to Vicky, add the LDF here. LDFs can be found at:
+# http://esw-artifactory.got.volvo.net/list/esw-release/com/volvo/esw/com_matrix/lin/
+ldfs = [
+    parseLDF("LDFs/LIN23_VMCU-T2_1.3.0-postfix.ldf"),
+    parseLDF("LDFs/LIN14_HMIIOM-T2_1.20.0-postfix.ldf")
+]
+
+merged_ldf = LDF()
+for ldf in ldfs:
+    merged_ldf.signals.extend(ldf.signals)
+    merged_ldf.frames.extend(ldf.frames)
+
+# After adding the LDF, add the message containing the signals for the desired LIN nodes here.
+request_messages = [
+    merged_ldf.frame("SM1toVMCU_L23"),  # Stalk module
+    merged_ldf.frame("GLU5toVMCU_L23"),  # Gearstick
+    merged_ldf.frame("SWS6toHMIIOM_L14")  # Steering wheel buttons
+]
 
 
-def handle_rx_data(frame: LINFrame):
+def log(*args, **kwargs):
+    if DEBUG:
+        print(*args, **kwargs)
+
+
+def handle_rx_data(frame):  # Unused
     # data attr is set on rx frames
-    print("RX: ID=", frame.id, " DATA=", ldf.frame(frame.id).parse_raw(frame.data), sep="")
+    log("RX: ID=", frame.id, " DATA=", merged_ldf.frame(frame.id).parse_raw(frame.data), sep="")
 
 
 def handle_new_rx_data(frame: LINFrame):
-
-    if "Euro Truck Simulator 2" not in GetWindowText(GetForegroundWindow()):
+    if not DEBUG and "Euro Truck Simulator 2" not in GetWindowText(GetForegroundWindow()):
         return
 
-    # data attr is set on rx frames
-    data = ldf.frame(frame.id).parse_raw(frame.data)
-    print("RX: ID=", frame.id, " DATA=", data, " (NEW DATA)", sep="")
-    # todo: decide whether or not to use raw or str value, whichever is faster.
-    for sig_name, sig_str_value in data:
-        signal_callbacks[sig_name](sig_str_value)
+    # data attr is set on rx frames, donät worry about any warnings
+    ldf_frame = merged_ldf.frame(frame.id)
+    if ldf_frame is None:
+        log("! Frame with id:", str(frame.id), "could not be found in the ldf")
+        return
+
+    data = ldf_frame.parse_raw(frame.data)
+    log("NEW RX: ID=", frame.id, " DATA=", data, " (NEW DATA)", sep="")
+
+    for sig_name, sig_str_value in data.items():
+        if sig_name in signal_callbacks:
+            signal_callbacks[sig_name](sig_str_value)
 
 
-def exit_handler(lin_inst: LUC):
-    if isinstance(lin_inst, LUC):
-        del lin_inst  # Disables LUC and de-inits serial port
-
+def set_custom_timing(master: LUC, frame: LinFrame, delay):
+    command = 'R0' + hex(frame.frame_id).replace("0x", "").rjust(2, "0") + \
+              "00" + str(delay) + \
+              "0" + str(frame.length) + '\r'  # Adding a zero before the length seemingly fixes stuff
+    master.flushData(command.encode())
+    ret = lin.ser.readline()
+    log("Custom timing for frame with ID:", frame.frame_id, "returned:", ret, "Command was", command)
+    return ret == b"Z\r"
 
 
 if __name__ == '__main__':
-    """
-    config_lines[2]: "device joy `di8.'{E7D4CFE0-D827-11EB-8004-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'`"
-    lin = LUC("COM1")
-    lin.openAsMaster()
-    lin.set_frame_rx_handler(handle_rx_data)
+
+    # config_lines[2]: "device joy `di8.'{E7D4CFE0-D827-11EB-8004-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'`"
+    # Creates and opens a serial connection to the Lin USB Converter
+    try:
+        lin = LUC(COM_PORT)
+    except SerialException as e:
+        print("Something went wrong:", e)
+        print("Try reconnecting the LUC.")
+        exit(-1)
+
+    # Called every time a message with data differing from the previous data is recieved.
     lin.set_new_frame_rx_handler(handle_new_rx_data)
-    lin.addReceptionFrameToTable(request_frame.frame_id, request_frame.length)  # set up continuous request sending
-    lin.addTransmitFrameToTable(request_frame.frame_id, request_data)  # todo: not sure if this or the one above is correct, either or I think
-    # todo: look at custom timing with big T or big R command and lin.flushData
-    lin.enable()
-    atexit.register(exit_handler, lin)
+
+    # If killed improperly, LUC gets messed up, and the enxt time we try to open as master it fails.
+    if lin.openAsMaster() is False:
+        print("LUC was not properly disabled, try again.")
+        print("Disabled LUC:", lin.disable())
+        del lin
+        exit(-1)
+
+    print("\n"
+          "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n"
+          "@@       DO NOT KILL THIS SCRIPT!      @@\n"
+          "@@        PRESS ESC TO STOP IT!        @@\n"
+          "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+
+    for msg in request_messages:
+        log("Added", msg.name, "to reception table: ", lin.addReceptionFrameToTable(msg.frame_id, msg.length))
+
+    print("Low speed (9600) enabled:", lin.lowSpeed())
+    print("Custom timing stalks:", set_custom_timing(lin, request_messages[0], 15))  # todo automize
+    print("Custom timing buttons:", set_custom_timing(lin, request_messages[1], 10))  # todo automize
+    print("Custom timing buttons:", set_custom_timing(lin, request_messages[2], 30))  # todo automize
+    print("LIN bus enabled:", lin.enable())
+
+    # ----- Debug Stuff ------- #
     """
+    lin.flushData(b'r00c4\r')
+    log("add c to recption table:", lin.ser.readline().decode("utf-8") == 'z\r')
+
+    lin.flushData(b'v\r')
+    log("test:", lin.ser.readline().decode("utf-8"))
+
+    log("lowSpeed:", lin.lowSpeed())
+    log(lin.addReceptionFrameToTable(SWS6_to_HMIIOM.frame_id, SWS6_to_HMIIOM.length))
+    # todo: look at custom timing with big T or big R command and lin.flushData
+
+    lin.flushData(b'R00c00154\r')  # todo: sometimes this fucks up?
+    log("timing:", lin.ser.readline())
     # todo: documentation, how to set up etc.
     # todo maybe: script for adding joy.b# to controls.sii
+    # ----- End Debug Stuff ------- #
+    """
 
-    from time import sleep
-    for i in range(4, 0, -1):
-        print(i)
-        sleep(1)
 
-    import signal_handlers as sh
-    print("Wipers0")
-    sh.hndl_wiper_stalk(0)
-    sleep(7)
-    print("Wipers1")
-    sh.hndl_wiper_stalk(1)
-    sleep(7)
-    print("Wipers2")
-    sh.hndl_wiper_stalk(2)
-    sleep(7)
-    print("Wipers3")
-    sh.hndl_wiper_stalk(3)
-    sleep(7)
-    print("Wipers4")
-    sh.hndl_wiper_stalk(4)
-    sleep(7)
-    print("done")
-    
+    def del_lin(*args):
+        global lin
+        log("Deleting lin")
+        lin.disable()
+        del lin
 
+
+    def on_release(key):
+        if key == Key.esc:
+            del_lin()
+            return False
+
+
+    # Collect events until released
+    with Listener(on_release=on_release) as listener:
+        listener.join()
+        log("Quitting")
+        quit(0)
