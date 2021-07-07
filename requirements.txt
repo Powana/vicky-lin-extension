@@ -2,7 +2,6 @@ pip>=21.1.1
 lark>=0.11.3
 lark-parser>=0.11.3
 pywin32>=301
-pyKey>=0.2
 ldfparser>=0.8.0
 six>=1.16.0
 pynput>=1.7.3

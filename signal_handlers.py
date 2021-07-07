@@ -160,3 +160,6 @@ def hndl_sw_esc_btn(signal_val):
 @handle_signal("LIN_SW_Mute_ButtonStatus_6")
 def hndl_sw_mute_btn(signal_val):
     btn_to_key_map(signal_val, Key.media_volume_mute)
+
+# todo:
+# Konstantino, there are a few more buttons that can be mapped straight to windows buttons like the ones above, gunna go home now
