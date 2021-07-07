@@ -4,16 +4,20 @@ from time import sleep
 from ets2_bindings import bindings
 
 j = pyvjoy.VJoyDevice(1)
-
 signal_callbacks = {}
+signal_values = {}  # todo: Check if needed, or if it slows stuff down too much
 
 
 def handle_signal(signal_name):
     def decorator(function):
-        signal_callbacks[signal_name] = function
+        def wrapper(signal_val):
+            # Only run the handler if the signal value has actually changed
+            if signal_values[signal_name] != signal_val:
+                signal_values[signal_name] = signal_val
+                return function(signal_val)
 
-        def wrapper(*args, **kwargs):
-            return function(*args, **kwargs)
+        signal_callbacks[signal_name] = wrapper
+        signal_values[signal_name] = None
 
         return wrapper
 
