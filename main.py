@@ -1,8 +1,10 @@
 # https://c4deszes.github.io/ldfparser/frames.html
 # https://pyserial.readthedocs.io/en/latest/shortintro.html
+import time
+
 from ucanlintools import LUC, LINFrame
 from ldfparser import parseLDF, LinFrame, LDF
-from pynput.keyboard import Key, Listener
+from pynput.keyboard import Key, Listener, Controller
 from signal_handlers import signal_callbacks
 
 from serial.serialutil import SerialException
@@ -27,6 +29,7 @@ for ldf in ldfs:
 # After adding the LDF, add the message containing the signals for the desired LIN nodes here.
 request_messages = [
     merged_ldf.frame("SM1toVMCU_L23"),  # Stalk module
+    merged_ldf.frame("GLU5toVMCU_L23"),  # Gearstick
     merged_ldf.frame("SWS6toHMIIOM_L14")  # Steering wheel buttons
 ]
 
@@ -44,7 +47,7 @@ def handle_rx_data(frame):  # Unused
 def handle_new_rx_data(frame: LINFrame):
     if not DEBUG and "Euro Truck Simulator 2" not in GetWindowText(GetForegroundWindow()):
         return
-    print("NEW FRAME ID:", frame.id)
+
     # data attr is set on rx frames, donät worry about any warnings
     ldf_frame = merged_ldf.frame(frame.id)
     if ldf_frame is None:
@@ -52,7 +55,7 @@ def handle_new_rx_data(frame: LINFrame):
         return
 
     data = ldf_frame.parse_raw(frame.data)
-    log("RX: ID=", frame.id, " DATA=", data, " (NEW DATA)", sep="")
+    log("NEW RX: ID=", frame.id, " DATA=", data, " (NEW DATA)", sep="")
 
     for sig_name, sig_str_value in data.items():
         if sig_name in signal_callbacks:
@@ -102,6 +105,7 @@ if __name__ == '__main__':
     print("Low speed (9600) enabled:", lin.lowSpeed())
     print("Custom timing stalks:", set_custom_timing(lin, request_messages[0], 15))  # todo automize
     print("Custom timing buttons:", set_custom_timing(lin, request_messages[1], 10))  # todo automize
+    print("Custom timing buttons:", set_custom_timing(lin, request_messages[2], 30))  # todo automize
     print("LIN bus enabled:", lin.enable())
 
     # ----- Debug Stuff ------- #
