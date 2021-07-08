@@ -1,1 +1,1 @@
-from main_handler import signal_callbacks
+from .main_handler import signal_callbacks
