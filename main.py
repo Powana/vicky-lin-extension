@@ -76,7 +76,7 @@ if __name__ == '__main__':
         lin = LUC(COM_PORT)
     except SerialException as e:
         print("Something went wrong:", e)
-        print("Try reconnecting the LUC.")
+        print("Make sure you're connecting to the correct COM port, or try reconnecting the LUC.")
         exit(-1)
 
     # Called every time a message with data differing from the previous data is recieved.
