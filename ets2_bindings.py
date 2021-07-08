@@ -18,9 +18,13 @@ bindings = {
 #  Add all bindings to a controls.sii file if not already added
 def main():
     path = "controls.sii"
-    with open(path, "r") as f:
-        lines = f.readlines()
-
+    try:
+        with open(path, "r") as f:
+            lines = f.readlines()
+    except FileNotFoundError:
+        input("Make sure controls.sii is in the same directory as ets2_bindings.py. Press enter to quit.")
+        exit(-1)
+    print("Read settings file successfully.")
     for i, line in enumerate(lines):
         for input_name in bindings:
             if " " + input_name + " " in line:
@@ -29,9 +33,11 @@ def main():
                 if joy_str not in line:
                     j = lines[i].index("`")+1  # bindings start after first backtick in line
                     lines[i] = lines[i][:j] + joy_str + "| " + lines[i][j:]  # insert joy_str after first backtick
-
+    print("Added custom bindings.")
     with open(path, "w") as f:
         f.writelines(lines)
+    print("Wrote bindings back to file.")
+    input("Press enter to exit..")
 
 
 if __name__ == '__main__':

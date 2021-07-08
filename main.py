@@ -1,14 +1,10 @@
-# https://c4deszes.github.io/ldfparser/frames.html
-# https://pyserial.readthedocs.io/en/latest/shortintro.html
-import time
-
 from ucanlintools import LUC, LINFrame
-from ldfparser import parseLDF, LinFrame, LDF
-from pynput.keyboard import Key, Listener, Controller
-from ets2_sig_handlers import signal_callbacks
-
+from ldfparser import parseLDF, LinFrame, LDF  # https://c4deszes.github.io/ldfparser/frames.html
+from pynput.keyboard import Key, Listener
 from serial.serialutil import SerialException
 from win32gui import GetWindowText, GetForegroundWindow
+
+from signal_handlers import signal_callbacks
 
 COM_PORT = "COM3"
 # Disables ets2 check and print statements

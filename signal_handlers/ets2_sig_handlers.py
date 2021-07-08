@@ -1,52 +1,6 @@
-import pyvjoy
 # import pyKey as pK
-from pynput.keyboard import Controller, Key
-from threading import Thread
-from time import sleep
 from ets2_bindings import bindings
-
-j = pyvjoy.VJoyDevice(1)
-keyb = Controller()
-
-signal_callbacks = {}
-signal_values = {}  # todo: Check if needed, or if it slows stuff down too much
-
-
-def handle_signal(signal_name):
-    def decorator(function):
-        def wrapper(signal_val):
-            # Only run the handler if the signal value has actually changed
-            if signal_values[signal_name] != signal_val:
-                signal_values[signal_name] = signal_val
-                return function(signal_val)
-
-        signal_callbacks[signal_name] = wrapper
-        signal_values[signal_name] = None
-
-        return wrapper
-
-    return decorator
-
-
-def release_btn_after(btn, press_after, release_after):
-    if press_after:
-        sleep(press_after)
-    j.set_button(btn, 1)
-    sleep(release_after)
-    j.set_button(btn, 0)
-    return
-
-
-def press_btn(btn, press_after=0.0, sec=0.03):
-    t = Thread(target=release_btn_after, args=(btn, press_after, sec))
-    t.start()
-
-
-# Can be used for convenience if the button should be mapped one-to-one to a windows key
-# For posible Key values, check: https://pynput.readthedocs.io/en/latest/keyboard.html#pynput.keyboard.Key
-def btn_to_key_map(signal_val, key: Key):
-    keyb.press(key) if signal_val == 1 else keyb.release(key)
-    # pK.pressKey(key) if signal_val == 1 else pK.releaseKey(key)
+from main_handler import *
 
 
 @handle_signal("LIN_DirInd_StalkStatus_1")
@@ -66,7 +20,6 @@ def hndl_dirind_stalk(signal_val):
 @handle_signal("LIN_MainBeamStalkStatus_1")
 def hndl_mainbeam_stalk(signal_val):
     btn_mainbeam = bindings["hblight"]
-    # todo check if mainbeam = highbeam
     if signal_val == 0:
         j.set_button(btn_mainbeam, 0)
     elif signal_val in [1, 2]:
@@ -162,4 +115,4 @@ def hndl_sw_mute_btn(signal_val):
     btn_to_key_map(signal_val, Key.media_volume_mute)
 
 # todo:
-# Konstantino, there are a few more buttons that can be mapped straight to windows buttons like the ones above, gunna go home now
+# Konstantinos, there are a few more buttons that can be mapped straight to windows buttons like the ones above, gunna go home now
