@@ -5,7 +5,7 @@ import time
 from ucanlintools import LUC, LINFrame
 from ldfparser import parseLDF, LinFrame, LDF
 from pynput.keyboard import Key, Listener, Controller
-from signal_handlers import signal_callbacks
+from ets2_sig_handlers import signal_callbacks
 
 from serial.serialutil import SerialException
 from win32gui import GetWindowText, GetForegroundWindow
