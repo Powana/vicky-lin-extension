@@ -44,7 +44,7 @@ def handle_new_rx_data(frame: LINFrame):
     if not DEBUG and "Euro Truck Simulator 2" not in GetWindowText(GetForegroundWindow()):
         return
 
-    # data attr is set on rx frames, donät worry about any warnings
+    # data attr is set on rx frames, don't worry about any warnings
     ldf_frame = merged_ldf.frame(frame.id)
     if ldf_frame is None:
         log("! Frame with id:", str(frame.id), "could not be found in the ldf")
@@ -70,7 +70,7 @@ def set_custom_timing(master: LUC, frame: LinFrame, delay):
 
 if __name__ == '__main__':
 
-    # config_lines[2]: "device joy `di8.'{E7D4CFE0-D827-11EB-8004-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'`"
+    # config_lines[2]: "device joy `di8.'{E7D4CFE0-D827-11EB-8004-444553540000}|{BEAD1234-0000-0000-0000-504944564944}'`
     # Creates and opens a serial connection to the Lin USB Converter
     try:
         lin = LUC(COM_PORT)
@@ -96,12 +96,12 @@ if __name__ == '__main__':
           "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
     for msg in request_messages:
-        log("Added", msg.name, "to reception table: ", lin.addReceptionFrameToTable(msg.frame_id, msg.length))
+        log("Added", hex(msg.frame_id), msg.name, "to reception table: ", lin.addReceptionFrameToTable(msg.frame_id, msg.length))
 
     print("Low speed (9600) enabled:", lin.lowSpeed())
     print("Custom timing stalks:", set_custom_timing(lin, request_messages[0], 15))  # todo automize
     print("Custom timing buttons:", set_custom_timing(lin, request_messages[1], 10))  # todo automize
-    print("Custom timing buttons:", set_custom_timing(lin, request_messages[2], 30))  # todo automize
+    print("Custom timing gears:", set_custom_timing(lin, request_messages[2], 30))  # todo automize
     print("LIN bus enabled:", lin.enable())
 
     # ----- Debug Stuff ------- #
