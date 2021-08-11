@@ -1,7 +1,7 @@
 
 DEVICE_NAME = "joy2"  # Todo: This has to be set manually according to the controls.sii for now
 
-# map between name of input in controls.sii, and the vJoy button # to associate with it
+# map between name of input in controls.sii, and the vJoy button # to associate with it, bit hacky but works
 bindings = {
     "lblinkerh": 1,
     "rblinkerh": 2,
@@ -12,6 +12,12 @@ bindings = {
     "wipers2": 7,
     "wipers3": 8,
     "wipers4": 9,
+    "cruiectrl": 10,
+    "cruiectrlinc": 11,
+    "cruiectrldec": 12,
+    "cruiectrlres": 13,
+    "showhud": 14,
+    "advpagen": 15,
 }
 
 

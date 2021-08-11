@@ -1,38 +1,38 @@
 # import pyKey as pK
 from ets2_bindings import bindings
-from main_handler import *
+from .main_handler import *
 
 
 @handle_signal("LIN_DirInd_StalkStatus_1")
-def hndl_dirind_stalk(signal_val):
+def hndl_dirind_stalk(sig_val):
     btn_dirind_l = bindings["lblinkerh"]
     btn_dirind_r = bindings["rblinkerh"]
 
-    if signal_val == 0:
+    if sig_val == 0:
         j.set_button(btn_dirind_l, 0)
         j.set_button(btn_dirind_r, 0)
-    elif signal_val in [1, 3]:
+    elif sig_val in [1, 3]:
         j.set_button(btn_dirind_l, 1)
-    elif signal_val in [2, 4]:
+    elif sig_val in [2, 4]:
         j.set_button(btn_dirind_r, 1)
 
 
 @handle_signal("LIN_MainBeamStalkStatus_1")
-def hndl_mainbeam_stalk(signal_val):
+def hndl_mainbeam_stalk(sig_val):
     btn_mainbeam = bindings["hblight"]
-    if signal_val == 0:
+    if sig_val == 0:
         j.set_button(btn_mainbeam, 0)
-    elif signal_val in [1, 2]:
+    elif sig_val in [1, 2]:
         j.set_button(btn_mainbeam, 1)
 
 
 @handle_signal("LIN_WiperAdjustStatus_1")
-def hndl_wiper_adjust(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
+def hndl_wiper_adjust(sig_val):
+    print("Handler not implemented, signal val is:", sig_val)
 
 
 @handle_signal("LIN_WiperStalkStat_1")
-def hndl_wiper_stalk(signal_val):
+def hndl_wiper_stalk(sig_val):
     btn_wipers_mode = bindings["wipers"]
     btn_wipers_off = bindings["wipers0"]
     btn_wipers_intermittent = bindings["wipers1"]
@@ -40,8 +40,8 @@ def hndl_wiper_stalk(signal_val):
     btn_wipers_fast = bindings["wipers3"]
     btn_wipers_4 = bindings["wipers4"]  # wipers4 seems to be the same as wipers3 (which is 'fast')
     # Bit of a hack for single wipe, todo: check if single wipe is intended behaviour for stalk pos 1
-    if signal_val == 1:
-        press_btn(btn_wipers_off)
+    if sig_val == 1:
+        press_btn(btn_wipers_off, release_after=0.03)
         press_btn(btn_wipers_fast, press_after=0.03)
         press_btn(btn_wipers_off, press_after=0.06)
         return
@@ -51,68 +51,110 @@ def hndl_wiper_stalk(signal_val):
                2: btn_wipers_intermittent,
                3: btn_wipers_normal,
                4: btn_wipers_fast}
-    press_btn(btn_map[signal_val])
-
-
-@handle_signal("LIN_Rainsensor_ButtonStatus")
-def hndl_rainsensor_btn(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
+    if sig_val in btn_map.values():
+        press_btn(btn_map[sig_val])
 
 
 @handle_signal("LIN_BrakeProgramButtonStatus")
-def hndl_brakeprog_btn(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
-
-
-@handle_signal("LIN_Washing_Status_1")
-def hndl_wash_status(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
+def hndl_brakeprog_btn(sig_val):
+    # Todo: Replace the retarder stalk for one without this button, not usable in ets2
+    print("Handler not implemented, signal val is:", sig_val)
 
 
 @handle_signal("LIN_RetarderStalkPosition_1")
-def hndl_retarder_stalk(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
+def hndl_retarder_stalk(sig_val):
+    # NOTE: The position to retarder level mapping is specific to the stalk module installed
+    # Some stalks have settings 'A','0','1','2','3', some only have 'A','1'.
+    if sig_val == 1:  # todo: check what we have and map that
+        pass
+    print("Handler not implemented, signal val is:", sig_val)
+
+
+@handle_signal("LIN_Rainsensor_ButtonStatus")
+def hndl_rainsensor_btn(sig_val):
+    print("Handler not implemented, signal val is:", sig_val)
+
+
+@handle_signal("LIN_Washing_Status_1")
+def hndl_wash_status(sig_val):
+    print("Handler not implemented, signal val is:", sig_val)
 
 
 @handle_signal("LIN_TrailerBrakeInputStatus")
-def hndl_trailer_brake_status(signal_val):
-    print("Handler not implemented, signal val is:", signal_val)
+def hndl_trailer_brake_status(sig_val):
+    print("Handler not implemented, signal val is:", sig_val)
 
 
 # Steering wheel buttons
 @handle_signal("LIN_SW_Right_ButtonStatus_6")
-def hndl_sw_right_btn(signal_val):
-    btn_to_key_map(signal_val, Key.right)
+def hndl_sw_right_btn(sig_val):
+    btn_to_key_map(sig_val, "right")
 
 
 @handle_signal("LIN_SW_Left_ButtonStatus_6")
-def hndl_sw_left_btn(signal_val):
-    btn_to_key_map(signal_val, Key.left)
+def hndl_sw_left_btn(sig_val):
+    btn_to_key_map(sig_val, "left")
 
 
 @handle_signal("LIN_SW_Up_ButtonStatus_6")
-def hndl_sw_up_btn(signal_val):
-    btn_to_key_map(signal_val, Key.up)
+def hndl_sw_up_btn(sig_val):
+    btn_to_key_map(sig_val, "up")
 
 
 @handle_signal("LIN_SW_Down_ButtonStatus_6")
-def hndl_sw_down_btn(signal_val):
-    btn_to_key_map(signal_val, Key.down)
+def hndl_sw_down_btn(sig_val):
+    btn_to_key_map(sig_val, "down")
 
 
 @handle_signal("LIN_SW_Enter_ButtonStatus_6")
-def hndl_sw_enter_btn(signal_val):
-    btn_to_key_map(signal_val, Key.enter)
+def hndl_sw_enter_btn(sig_val):
+    btn_to_key_map(sig_val, "enter")
 
 
 @handle_signal("LIN_SW_Esc_ButtonStatus_6")
-def hndl_sw_esc_btn(signal_val):
-    btn_to_key_map(signal_val, Key.esc)
+def hndl_sw_esc_btn(sig_val):
+    btn_to_key_map(sig_val, "esc")
 
 
 @handle_signal("LIN_SW_Mute_ButtonStatus_6")
-def hndl_sw_mute_btn(signal_val):
-    btn_to_key_map(signal_val, Key.media_volume_mute)
+def hndl_sw_mute_btn(sig_val):
+    btn_to_key_map(sig_val, "volume mute")
 
-# todo:
-# Konstantinos, there are a few more buttons that can be mapped straight to windows buttons like the ones above, gunna go home now
+
+@handle_signal("LIN_SW_VolDown_ButtonStatus_6")
+def hndl_sw_voldown(sig_val):
+    btn_to_key_map(sig_val, "volume down")
+
+# This is getting tedious, going to use anonymous function names from here on out to save time
+
+
+@handle_signal("LIN_SW_VolUp_ButtonStatus_6")
+def hndl_sw_volup(sig_val):
+    btn_to_key_map(sig_val, "volume up")
+
+
+@handle_signal("LIN_SW_Menu_ButtonStatus_6")
+def hndl_sw_menu(sig_val):
+    btn_to_key_map(sig_val, "esc")
+
+
+@handle_signal("LIN_SWSpdCtrlButtonsStatus6")
+def hndl_sw_spdctrl(sig_val):
+    btn_map = {1: bindings["cruiectrl"],  # val 1/2 should actually only turn off/on, but ets2 only has a toggle button
+               2: bindings["cruiectrl"],
+               3: bindings["cruiectrlinc"],
+               4: bindings["cruiectrldec"]}
+    if sig_val in btn_map.values():
+        press_btn(btn_map[sig_val])
+    elif sig_val == 5:
+        keyboard.press_and_release("enter")
+
+
+@handle_signal("LIN_SW_Home_ButtonsStatus_6")
+def hndl_sw_home(sig_val):
+    btn_to_key_map(sig_val, bindings["showhud"])
+
+
+@handle_signal("LIN_SW_Focus_ButtonStatus_6")
+def hndl_sw_focus(sig_val):
+    btn_to_key_map(sig_val, bindings["advpagen"])
