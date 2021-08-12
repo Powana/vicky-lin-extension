@@ -18,6 +18,9 @@ bindings = {
     "cruiectrlres": 13,
     "showhud": 14,
     "advpagen": 15,
+    "lighthorn": 16,
+    "lblinker": 17,
+    "rblinker": 18,
 }
 
 
