@@ -5,31 +5,30 @@ from .main_handler import *
 
 @handle_signal("LIN_DirInd_StalkStatus_1")
 def hndl_dirind_stalk(sig_val):
-    btn_dirind_l = bindings["lblinkerh"]
-    btn_dirind_l_tgl = bindings["lblinker"]
-    btn_dirind_r = bindings["rblinkerh"]
-    btn_dirind_r_tgl = bindings["rblinker"]
-    counter = 0
+    # btn 1 will be used for keeping blinkers on, btn 2 will be used for "flashing" the blinkers a few secs on stalk tap
+    btn_dirind_l1 = bindings["lblinkerh"][0]
+    btn_dirind_l2 = bindings["lblinkerh"][1]
+    btn_dirind_r1 = bindings["rblinkerh"][0]
+    btn_dirind_r2 = bindings["rblinkerh"][1]
 
-
-    # TODO: Test if temp-position signal is sent every time one pulls the lever all the way up/down, if it does this hack works
     if sig_val == 0:
-        j.set_button(btn_dirind_l, 0)
-        j.set_button(btn_dirind_r, 0)
-        press_btn(btn_dirind_l_tgl)
-        press_btn(btn_dirind_r_tgl)
-        counter = 0
-    elif sig_val == 1 and counter == 1:
-        press_btn(btn_dirind_l_tgl)
-        # j.set_button(btn_dirind_l, 1)
-    elif sig_val == 3:
-        press_btn(btn_dirind_l, release_after=4)
-        counter += 1
-    elif sig_val == 2 and counter == 1:
-        press_button(btn_dirind_r_tgl)
-    elif sig_val == 4:
-        press_btn(btn_dirind_r, release_after=4)
-        counter += 1
+        j.set_button(btn_dirind_l2, 0)
+        j.set_button(btn_dirind_r2, 0)
+
+    elif sig_val == 1:  # All the way left
+        j.set_button(btn_dirind_l2, 1)
+
+    elif sig_val == 3:  # Halfway left
+        press_btn(btn_dirind_l1, release_after=4)
+        j.set_button(btn_dirind_l2, 1)
+
+    elif sig_val == 2:  # All the way right
+        j.set_button(btn_dirind_r2, 1)
+
+    elif sig_val == 4:  # Halfway right
+        press_btn(btn_dirind_r1, release_after=4)
+        j.set_button(btn_dirind_r2, 1)
+
 
 
 @handle_signal("LIN_MainBeamStalkStatus_1")
