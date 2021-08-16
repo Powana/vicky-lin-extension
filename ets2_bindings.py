@@ -33,6 +33,7 @@ bindings = {
     "geardownhint": 30,
     "engine": 31,
     "parkingbrake": 32,
+    "trailerbrake": 33
 }
 
 

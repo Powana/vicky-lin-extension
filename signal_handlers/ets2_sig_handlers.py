@@ -73,10 +73,14 @@ def hndl_wiper_stalk(sig_val):
         press_btn(btn_map[sig_val])
 
 
-@handle_signal("LIN_BrakeProgramButtonStatus")
-def hndl_brakeprog_btn(sig_val):
-    # Todo: Replace the retarder stalk for one without this button, not usable in ets2
-    print("Handler not implemented, signal val is:", sig_val)
+@handle_signal("LIN_TrailerBrakeInputStatus")
+# Todo: The stalk has 2 position for this function but there is only 1 in the game
+def hndl_trailer_brake_btn(sig_val):
+    btn_trailer_brake = bindings["trailerbrake"]
+    if sig_val in (1, 2):
+        j.set_button(btn_trailer_brake, 1)
+    else:
+        j.set_button(btn_trailer_brake, 0)
 
 
 @handle_signal("LIN_RetarderStalkPosition_1")
