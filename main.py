@@ -6,7 +6,7 @@ from win32gui import GetWindowText, GetForegroundWindow
 
 from signal_handlers import signal_callbacks
 
-COM_PORT = "COM3"
+COM_PORT = "COM4"
 # Disables ets2 check and print statements
 DEBUG = True
 
