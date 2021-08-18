@@ -115,32 +115,59 @@ def hndl_wash_status(sig_val):
     print("Handler not implemented, signal val is:", sig_val)
 
 
-@handle_signal("LIN_TrailerBrakeInputStatus")
-# Todo: The switch is not included in Vicky setup, so no reason to implement
-def hndl_trailer_brake_status(sig_val):
-    print("Handler not implemented, signal val is:", sig_val)
-
+prev_gear = None
 # Gear Lever Unit
 @handle_signal("LIN_GearLeverStatus_5")
 def hndl_GLU_status(sig_val):
+    global prev_gear
+    
     btn_gear_R = bindings["reverse"]
     btn_gear_N = bindings["gear0"]
     btn_gear_A = bindings["drive"]
-    btn_gear_M = bindings["transemi"]
+    btn_gear_M = bindings["transemi_on"]
     btn_map = {0: btn_gear_R,
                1: btn_gear_N,
                2: btn_gear_A,
                3: btn_gear_M}
-    if sig_val in btn_map.keys():
-        press_btn(btn_map[sig_val])
+    
+    
+    if sig_val in btn_map:
+        if prev_gear is None:
+            prev_gear = sig_val
+            
+        if sig_val == 3:
+            press_btn(btn_map[3])
+        
+        elif sig_val == 2 and prev_gear == 3:
+            press_btn(bindings["transemi_on"])
+
+
+        # Looks dumb but ensures overlap when shifting gears to retain current gear num
+        # TODO: Fix gear reset to N when swapping to manual
+        if sig_val != 3:
+            j.set_button(btn_map[sig_val], 1)
+            
+        for key in [2,1,0]:
+            j.set_button(btn_map[key], 0 if sig_val != key else 1)
+
+
+        prev_gear = sig_val
+        
+        
 
 @handle_signal("LIN_GearShiftInputStatus_5")
 def hndl_GLU_gear_shift(sig_val):
-    btn_shift_up = bindings["gearuphint"]
-    btn_shift_down = bindings["geardownhint"]
-    btn_map = {1: btn_shift_up,
-               2: btn_shift_down}
+    btn_shift_up_h = bindings["gearuphint"]
+    btn_shift_down_h = bindings["geardownhint"]
+    btn_map = {1: btn_shift_up_h,
+               2: btn_shift_down_h,
+               3: bindings["gearup"],
+               4: bindings["geardown"]}
+
+    # NOTE: Buggy bhaviour when shifting up/down in A1, game bug
     if sig_val in btn_map.keys():
+        if prev_gear == 3:
+            sig_val += 2
         press_btn(btn_map[sig_val])
 
 
