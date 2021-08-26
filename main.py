@@ -8,6 +8,7 @@ import config
 from signal_handlers import signal_callbacks
 
 COM_PORT = config.COM_PORT
+
 # Disables ets2 check and print statements
 DEBUG = config.DEBUG
 

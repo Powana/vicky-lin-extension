@@ -19,6 +19,24 @@ bindings = {
     "showhud": 14,
     "advpagen": 15,
     "lighthorn": 16,
+    "retarder0": 19,
+    "retarder1": 20,
+    "retarder2": 21,
+    "retarder3": 22,
+    "retarder4": 23,
+    "retarder5": 24,
+    "reverse": 25,
+    "gear0": 26,
+    "drive": 27,
+    "transemi_on": 28,
+    "transemi_off":34,
+    "gearup": 35,
+    "geardown": 36,
+    "gearuphint": 29,
+    "geardownhint": 30,
+    "engine": 31,
+    "parkingbrake": 32,
+    "trailerbrake": 33
 }
 
 

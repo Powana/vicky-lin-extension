@@ -69,41 +69,122 @@ def hndl_wiper_stalk(sig_val):
                2: btn_wipers_intermittent,
                3: btn_wipers_normal,
                4: btn_wipers_fast}
-    if sig_val in btn_map.values():
+    if sig_val in btn_map.keys():
         press_btn(btn_map[sig_val])
 
 
-@handle_signal("LIN_BrakeProgramButtonStatus")
-def hndl_brakeprog_btn(sig_val):
-    # Todo: Replace the retarder stalk for one without this button, not usable in ets2
-    print("Handler not implemented, signal val is:", sig_val)
+@handle_signal("LIN_TrailerBrakeInputStatus")
+# Todo: The stalk has 2 position for this function but there is only 1 in the game
+def hndl_trailer_brake_btn(sig_val):
+    btn_trailer_brake = bindings["trailerbrake"]
+    if sig_val in (1, 2):
+        j.set_button(btn_trailer_brake, 1)
+    else:
+        j.set_button(btn_trailer_brake, 0)
 
 
 @handle_signal("LIN_RetarderStalkPosition_1")
 def hndl_retarder_stalk(sig_val):
-    # NOTE: The position to retarder level mapping is specific to the stalk module installed
-    # Some stalks have settings 'A','0','1','2','3', some only have 'A','1'.
-    if sig_val == 1:  # todo: check what we have and map that
-        pass
-    print("Handler not implemented, signal val is:", sig_val)
+    btn_retard_off = bindings["retarder0"]
+    btn_retard_pos_1 = bindings["retarder1"]
+    btn_retard_pos_2 = bindings["retarder2"]
+    btn_retard_pos_3 = bindings["retarder3"]
+    btn_retard_pos_4 = bindings["retarder4"]
+    btn_retard_pos_5 = bindings["retarder5"]
+    btn_retard_auto = bindings["retarder0"]  # Todo: There is a setting with auto retarder in the game but no key binding
+    btn_map = {0: btn_retard_off,
+               1: btn_retard_pos_1,
+               2: btn_retard_pos_2,
+               3: btn_retard_pos_3,
+               4: btn_retard_pos_4,
+               5: btn_retard_pos_5,
+               7: btn_retard_auto}
+    if sig_val in btn_map.keys():
+        press_btn(btn_map[sig_val])
 
 
 @handle_signal("LIN_Rainsensor_ButtonStatus")
+# Todo: It is not supported by the game as for now
 def hndl_rainsensor_btn(sig_val):
     print("Handler not implemented, signal val is:", sig_val)
 
 
 @handle_signal("LIN_Washing_Status_1")
+# Todo: It is not supported by the game as for now
 def hndl_wash_status(sig_val):
     print("Handler not implemented, signal val is:", sig_val)
 
 
-@handle_signal("LIN_TrailerBrakeInputStatus")
-def hndl_trailer_brake_status(sig_val):
-    print("Handler not implemented, signal val is:", sig_val)
+prev_gear = None
+# Gear Lever Unit
+@handle_signal("LIN_GearLeverStatus_5")
+def hndl_GLU_status(sig_val):
+    global prev_gear
+    
+    btn_gear_R = bindings["reverse"]
+    btn_gear_N = bindings["gear0"]
+    btn_gear_A = bindings["drive"]
+    btn_gear_M = bindings["transemi_on"]
+    btn_map = {0: btn_gear_R,
+               1: btn_gear_N,
+               2: btn_gear_A,
+               3: btn_gear_M}
+    
+    
+    if sig_val in btn_map:
+        if prev_gear is None:
+            prev_gear = sig_val
+            
+        if sig_val == 3:
+            press_btn(btn_map[3])
+        
+        elif sig_val == 2 and prev_gear == 3:
+            press_btn(bindings["transemi_on"])
+
+
+        # Looks dumb but ensures overlap when shifting gears to retain current gear num
+        # TODO: Fix gear reset to N when swapping to manual
+        if sig_val != 3:
+            j.set_button(btn_map[sig_val], 1)
+            
+        for key in [2,1,0]:
+            j.set_button(btn_map[key], 0 if sig_val != key else 1)
+
+
+        prev_gear = sig_val
+        
+        
+
+@handle_signal("LIN_GearShiftInputStatus_5")
+def hndl_GLU_gear_shift(sig_val):
+    btn_shift_up_h = bindings["gearuphint"]
+    btn_shift_down_h = bindings["geardownhint"]
+    btn_map = {1: btn_shift_up_h,
+               2: btn_shift_down_h,
+               3: bindings["gearup"],
+               4: bindings["geardown"]}
+
+    # NOTE: Buggy bhaviour when shifting up/down in A1, game bug
+    if sig_val in btn_map.keys():
+        if prev_gear == 3:
+            sig_val += 2
+        press_btn(btn_map[sig_val])
 
 
 # Steering wheel buttons
+# The green phone button will act as the ignition
+@handle_signal("LIN_SW_GreenPhone_BtnStat_6")
+def hndl_sw_green_phone_btn(sig_val):
+    btn_green_phone = bindings["engine"]
+    if sig_val == 1:
+        press_btn(btn_green_phone)
+# The red phone button will act as the parking brake toggle
+@handle_signal("LIN_SW_RedPhone_BtnStat_6")
+def hndl_sw_red_phone_btn(sig_val):
+    btn_red_phone = bindings["parkingbrake"]
+    if sig_val == 1:
+        press_btn(btn_red_phone)
+
 @handle_signal("LIN_SW_Right_ButtonStatus_6")
 def hndl_sw_right_btn(sig_val):
     btn_to_key_map(sig_val, "right")
