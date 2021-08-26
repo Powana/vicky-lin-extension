@@ -3,12 +3,14 @@ from ucanlintools import LUC, LINFrame
 from ldfparser import parseLDF, LinFrame, LDF  # https://c4deszes.github.io/ldfparser/frames.html
 from serial.serialutil import SerialException
 from win32gui import GetWindowText, GetForegroundWindow
+import config
 
 from signal_handlers import signal_callbacks
 
-COM_PORT = "COM4"
+COM_PORT = config.COM_PORT
+
 # Disables ets2 check and print statements
-DEBUG = True
+DEBUG = config.DEBUG
 
 # When adding a new lin bus to Vicky, add the LDF here. LDFs can be found at:
 # http://esw-artifactory.got.volvo.net/list/esw-release/com/volvo/esw/com_matrix/lin/
