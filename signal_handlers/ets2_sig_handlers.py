@@ -19,19 +19,19 @@ def hndl_dirind_stalk(sig_val):
         j.set_button(btn_dirind_l2, 1)
 
     elif sig_val == 3:  # Halfway left
-        press_btn(btn_dirind_l1, release_after=4)
+        press_btn(btn_dirind_l1, release_after=3)
         j.set_button(btn_dirind_l2, 1)
 
     elif sig_val == 2:  # All the way right
         j.set_button(btn_dirind_r2, 1)
 
     elif sig_val == 4:  # Halfway right
-        press_btn(btn_dirind_r1, release_after=4)
+        press_btn(btn_dirind_r1, release_after=3)
         j.set_button(btn_dirind_r2, 1)
 
 
 
-@handle_signal("LIN_MainBeamStalkStatus_1")
+@handle_signal("LIN_MainBeam_StalkStatus_1")
 def hndl_mainbeam_stalk(sig_val):
     btn_tgl_mainbeam = bindings["hblight"]
     btn_hold_mainbeam = bindings["lighthorn"]
@@ -77,10 +77,18 @@ def hndl_wiper_stalk(sig_val):
 # Todo: The stalk has 2 position for this function but there is only 1 in the game
 def hndl_trailer_brake_btn(sig_val):
     btn_trailer_brake = bindings["trailerbrake"]
-    if sig_val in (1, 2):
+    if sig_val == 1:
         j.set_button(btn_trailer_brake, 1)
     else:
         j.set_button(btn_trailer_brake, 0)
+
+@handle_signal("LIN_BrakeProgramButtonStatus")
+def hndl_brake_program_btn(sig_val):
+    btn_brake_program = bindings["motorbrake"]
+    if sig_val == 1:
+        j.set_button(btn_brake_program, 1)
+    else:
+        j.set_button(btn_brake_program, 0)
 
 
 @handle_signal("LIN_RetarderStalkPosition_1")
@@ -115,12 +123,22 @@ def hndl_wash_status(sig_val):
     print("Handler not implemented, signal val is:", sig_val)
 
 
-prev_gear = None
+@handle_signal("LIN_EconomyPower_ButtonStat_5")
+def hndl_EP_btn_status(sig_val):
+    btn_EP = bindings["attach"]
+    if sig_val == 1:
+        j.set_button(btn_EP,1)
+    else:
+        j.set_button(btn_EP,0)
+
+
+# Because we use a flag, behaviour can be inverted if game starts in manual and script starts with the gear in on manual.
+manual_on = None
 # Gear Lever Unit
 @handle_signal("LIN_GearLeverStatus_5")
 def hndl_GLU_status(sig_val):
-    global prev_gear
-    
+    global manual_on
+
     btn_gear_R = bindings["reverse"]
     btn_gear_N = bindings["gear0"]
     btn_gear_A = bindings["drive"]
@@ -132,14 +150,18 @@ def hndl_GLU_status(sig_val):
     
     
     if sig_val in btn_map:
-        if prev_gear is None:
-            prev_gear = sig_val
             
         if sig_val == 3:
-            press_btn(btn_map[3])
+            if manual_on != None:
+                press_btn(btn_gear_M)
+
+            manual_on = True
+            print("Manual is now ON")
         
-        elif sig_val == 2 and prev_gear == 3:
-            press_btn(bindings["transemi_on"])
+        elif manual_on:
+            press_btn(btn_gear_M)
+            manual_on = False
+            print("Manual is now OFF")
 
 
         # Looks dumb but ensures overlap when shifting gears to retain current gear num
@@ -149,9 +171,6 @@ def hndl_GLU_status(sig_val):
             
         for key in [2,1,0]:
             j.set_button(btn_map[key], 0 if sig_val != key else 1)
-
-
-        prev_gear = sig_val
         
         
 
@@ -166,7 +185,7 @@ def hndl_GLU_gear_shift(sig_val):
 
     # NOTE: Buggy bhaviour when shifting up/down in A1, game bug
     if sig_val in btn_map.keys():
-        if prev_gear == 3:
+        if manual_on == True:
             sig_val += 2
         press_btn(btn_map[sig_val])
 
@@ -239,14 +258,17 @@ def hndl_sw_menu(sig_val):
 
 @handle_signal("LIN_SWSpdCtrlButtonsStatus6")
 def hndl_sw_spdctrl(sig_val):
-    btn_map = {1: bindings["cruiectrl"],  # val 1/2 should actually only turn off/on, but ets2 only has a toggle button
-               2: bindings["cruiectrl"],
+    btn_map = {6: bindings["cruiectrl"],  # val 1/2 should actually only turn off/on, but ets2 only has a toggle button
+               8: bindings["cruiectrl"],
+               1: bindings["cruiectrl"],
                3: bindings["cruiectrlinc"],
-               4: bindings["cruiectrldec"]}
-    if sig_val in btn_map.values():
+               4: bindings["cruiectrldec"],
+               2: bindings["cruiectrlres"]}
+    if sig_val in btn_map.keys():
         press_btn(btn_map[sig_val])
     elif sig_val == 5:
         keyboard.press_and_release("enter")
+        
 
 
 @handle_signal("LIN_SW_Home_ButtonsStatus_6")

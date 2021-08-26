@@ -79,8 +79,6 @@ if __name__ == '__main__':
         print("Make sure you're connecting to the correct COM port, or try reconnecting the LUC.")
         exit(-1)
 
-    print(signal_callbacks)
-
     # Called every time a message with data differing from the previous data is recieved.
     lin.set_new_frame_rx_handler(handle_new_rx_data)
 
